@@ -50,8 +50,13 @@ router.post('/signup', (req, res) => {
             password: req.body.password
         };
 
-        db.save(newUser); //no duplicate checking
-        res.json({success: true, msg: 'Successfully created new user.'})
+        try {
+            db.save(newUser); //no duplicate checking
+            res.json({success: true, msg: 'Successfully created new user.'});
+        }
+        catch (err) {
+            console.log(`User save fail: ${err.name}`);
+        }
     }
 });
 
@@ -63,7 +68,7 @@ router.post('/signin', (req, res) => {
     } else {
         if (req.body.password == user.password) {
             var userToken = { id: user.id, username: user.username };
-            var token = jwt.sign(userToken, process.env.SECRET_KEY);
+            var token = jwt.sign(userToken, process.env.UNIQUE_KEY);
             res.json ({success: true, token: 'JWT ' + token});
         }
         else {
@@ -94,6 +99,64 @@ router.route('/testcollection')
     }
     );
     
+router.route("/movies")
+    // 
+    .get((req, res) => {
+        // JSON object includes headers, body, key.
+        var object = getJSONObjectForMovieRequirement(req);
+        
+        // Appending status, message, query, and UNIQUE_KEY to JSON object. 
+        object.status = 200;
+        object.message = "GET movies";
+        object.query = req.body.query ? req.body.query : "No query in request.";
+        object.env = process.env.UNIQUE_KEY;
+        
+        res.json(object);
+
+    })
+
+    .post((req, res) => {
+        // no auth
+        var object = getJSONObjectForMovieRequirement(req);
+        object.status = 200;
+        object.message = "movie saved";
+        object.query = req.body.query ? req.body.query : "No query in request."
+        object.env = process.env.UNIQUE_KEY;
+
+        res.json(object);
+
+    })
+    
+    .put(authJwtController.isAuthenticated, (req, res) => {
+        // jwt auth needed
+        var object = getJSONObjectForMovieRequirement(req);
+
+        object.status = 200;
+        object.message = "movie updated";
+        object.query = req.body.query ? req.body.query : "No query in request.";
+        object.env = process.env.UNIQUE_KEY;
+
+        res.json(object);
+    })
+
+    .delete(authController.isAuthenticated, (req, res) => {
+        // jwt auth needed
+        var object = getJSONObjectForMovieRequirement(req);
+
+        object.status = 200;
+        object.message = "movie deleted";
+        object.query = req.body.query ? req.body.query : "No query in request.";
+        object.env = process.env.UNIQUE_KEY;
+
+        res.json(object);
+    })
+
+    .all((req, res) => {
+        res.status(200).send({message : "HTTP method not supported."});
+
+        res.json();
+    })
+
 app.use('/', router);
 app.listen(process.env.PORT || 8080);
 module.exports = app; // for testing only
