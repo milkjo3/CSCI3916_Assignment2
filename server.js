@@ -100,60 +100,97 @@ router.route('/testcollection')
     );
     
 router.route("/movies")
-    // 
+    // GET request handler to /movies route and returns an updated payload. No authentication required. 
     .get((req, res) => {
-        // JSON object includes headers, body, key.
-        var object = getJSONObjectForMovieRequirement(req);
-        
-        // Appending status, message, query, and UNIQUE_KEY to JSON object. 
-        object.status = 200;
-        object.message = "GET movies";
-        object.query = req.body.query ? req.body.query : "No query in request.";
-        object.env = process.env.UNIQUE_KEY;
-        
-        res.json(object);
+        try {
+            // JSON object includes headers, body, key. (duplicated, key = env).
+            var object = getJSONObjectForMovieRequirement(req);
+            
+            // Appending status, message, query, and UNIQUE_KEY to JSON object. 
+            object.status = 200;
+            object.message = "GET movies";
+            object.query = req.query.q ? req.query.q : "No query in request.";
+            object.env = process.env.UNIQUE_KEY;
+            
+            // Adding the object to the response.
+            res.json(object);
+        }
+        catch (err) {
+            // Error handling.
+            return res.status(500).json({ message: "Error GET /movies", error : err});
+        }
 
     })
 
     .post((req, res) => {
-        // no auth
-        var object = getJSONObjectForMovieRequirement(req);
-        object.status = 200;
-        object.message = "movie saved";
-        object.query = req.body.query ? req.body.query : "No query in request."
-        object.env = process.env.UNIQUE_KEY;
+        // POST request handler to /movies route and returns an updated payload. No authentication required. 
+        try {
+            // JSON object includes headers, body, key (duplicated, key = env).
+            var object = getJSONObjectForMovieRequirement(req);
 
-        res.json(object);
+            // Appending status, message, query, and UNIQUE_KEY to JSON object. 
+            object.status = 200;
+            object.message = "movie saved";
+            object.query = req.query.q ? req.query.q : "No query in request.";
+            object.env = process.env.UNIQUE_KEY;
 
+            // Adding the object to the response.
+            res.json(object);
+        }
+        catch (err) {
+            // Error handling.
+            return res.status(500).json({ message: "Error POST /movies", error : err});
+        }
     })
     
     .put(authJwtController.isAuthenticated, (req, res) => {
-        // jwt auth needed
-        var object = getJSONObjectForMovieRequirement(req);
+        // PUT request handler to /movies route and returns an updated payload. JWT authentication (token) required.
+        try {
+            // JSON object includes headers, body, key (duplicated, key = env).
+            var object = getJSONObjectForMovieRequirement(req);
 
-        object.status = 200;
-        object.message = "movie updated";
-        object.query = req.body.query ? req.body.query : "No query in request.";
-        object.env = process.env.UNIQUE_KEY;
+            // Appending status, message, query, and UNIQUE_KEY to JSON object. 
+            object.status = 200;
+            object.message = "movie updated";
+            object.query = req.query.q ? req.query.q : "No query in request.";
+            object.env = process.env.UNIQUE_KEY;
 
-        res.json(object);
+            // Adding the object to the response.
+            res.json(object);
+        }
+        catch (err) {
+            // Error handling.
+            return res.status(500).json({ message: "Error PUT /movies", error : err});
+        }
     })
 
     .delete(authController.isAuthenticated, (req, res) => {
-        // jwt auth needed
-        var object = getJSONObjectForMovieRequirement(req);
+        // DELETE request handler to /movies route and returns an updated payload. Basic authentication 
+            // (username, password) required. 
+        
+        try {
+            // JSON object includes headers, body, key (duplicated, key = env)
+            var object = getJSONObjectForMovieRequirement(req);
 
-        object.status = 200;
-        object.message = "movie deleted";
-        object.query = req.body.query ? req.body.query : "No query in request.";
-        object.env = process.env.UNIQUE_KEY;
+            // Appending status, message, query, and UNIQUE_KEY to JSON object.
+            object.status = 200;
+            object.message = "movie deleted";
+            object.query = req.query.q ? req.query.q : "No query in request.";
+            object.env = process.env.UNIQUE_KEY;
 
-        res.json(object);
+            // Adding the object to the response. 
+            res.json(object);
+        }
+        catch (err) {
+            // Error handling.
+            return res.status(500).json({ message: "Error PUT /movies", error : err});
+        }
     })
 
     .all((req, res) => {
+        // All other HTTP verbs not supported on /movies route (PATCH). 
+            // OPTIONS and HEAD requests are handled by express and cors middleware.
         res.status(200).send({message : "HTTP method not supported."});
-
         res.json();
     })
 
